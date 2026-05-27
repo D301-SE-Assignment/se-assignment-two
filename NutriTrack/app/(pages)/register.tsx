@@ -5,6 +5,8 @@ import { User } from '@/assets/db/types'
 import { useState } from 'react';
 import { router } from 'expo-router';
 
+import * as Crypto from 'expo-crypto'
+
 
 export default function HomeScreen()
 {
@@ -39,7 +41,7 @@ export default function HomeScreen()
     {
       await db.runAsync(
         'INSERT INTO users (email, password) VALUES (?, ?)',
-        [email.trim().toLowerCase(), password]
+        [email.trim().toLowerCase(), await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)]
       )
 
       console.log("Success", `Account created! You can now log in.`)

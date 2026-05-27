@@ -5,6 +5,9 @@ import { User } from '@/assets/db/types'
 import { useState } from 'react';
 import { router } from 'expo-router';
 
+import * as Crypto from 'expo-crypto'
+
+
 
 export default function HomeScreen()
 {
@@ -26,7 +29,7 @@ export default function HomeScreen()
     {
       const user = await db.getFirstAsync<User>(
         'SELECT * FROM users WHERE email = ? AND password = ?',
-        [email.trim().toLowerCase(), password]
+        [email.trim().toLowerCase(), await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)]
       )
       if (user)
       {

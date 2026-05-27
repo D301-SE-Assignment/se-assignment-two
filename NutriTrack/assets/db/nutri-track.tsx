@@ -3,7 +3,7 @@ export const migration =
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS "users" (
         "id" INTEGER PRIMARY KEY,
-        "email" TEXT NOT NULL,
+        "email" TEXT NOT NULL UNIQUE,
         "password" TEXT NOT NULL
     );
 

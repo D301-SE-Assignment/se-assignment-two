@@ -2,7 +2,7 @@ import { Stack } from "expo-router"
 import "../global.css"
 import * as SQLite from 'expo-sqlite'
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite'
-import { User } from '@/assets/db/types'
+import { Profile, User } from '@/assets/db/types'
 import { migration } from "@/assets/db/nutri-track"
  
 export default function RootLayout()
@@ -20,6 +20,8 @@ async function migrateDBIfNeeded(db:SQLite.SQLiteDatabase)
 	{
 		await db.execAsync(migration)
 		console.log("Database initialized successfully!");
+		console.info(await db.getAllAsync<User>('SELECT * FROM users'))
+		console.info(await db.getAllAsync<Profile>('SELECT * FROM profiles'))
 	}
 	catch (error)
 	{
