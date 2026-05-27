@@ -7,6 +7,15 @@ export const migration =
         "password" TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS "sessions" (
+        "token" TEXT PRIMARY KEY,
+        "user_id" INTEGER NOT NULL,
+        "profile_id" INTEGER,
+        "expiry" INTEGER,
+        FOREIGN KEY ("user_id") REFERENCES "users" ("id"),
+        FOREIGN KEY ("profile_id") REFERENCES "profiles" ("id")
+    );
+
     CREATE TABLE IF NOT EXISTS "profiles" (
         "id" INTEGER PRIMARY KEY,
         "user_id" INTEGER NOT NULL,

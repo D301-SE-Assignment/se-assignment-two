@@ -1,8 +1,15 @@
 export interface User
 {
-  id: number;
-  email: string;
-  passwword: string;
+	id: number,
+	email: string,
+	passwword: string,
+}
+export interface Session
+{
+	token: string,
+	user_id: number,
+	profile_id: number,
+	expiry: number,
 }
 
 export interface Profile
