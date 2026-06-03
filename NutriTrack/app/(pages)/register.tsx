@@ -54,13 +54,9 @@ export default function HomeScreen()
       .values({email: email.trim().toLowerCase(), password: await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)})
       .returning()
 
-    const token = Crypto.randomUUID()
-    const TIMEOUT_MILISECONDS = 1000 * 60 //1 minute in miliseconds
-    await drizzleDb.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
-
     console.log("Success", `Account created! You can now log in.`)
     Alert.alert("Success", `Account created! You can now log in.`)
-    router.replace('/') //redirect to index
+    router.replace('/login') //redirect to login
   }
   return (
     <View className="justify-center p-10 flex-1">
