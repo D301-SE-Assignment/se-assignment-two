@@ -1,13 +1,13 @@
 import { Platform, StyleSheet, View, ScrollView, Button, Text, TextInput, Pressable, Alert } from 'react-native';
 
 import { useSQLiteContext } from 'expo-sqlite'
-import { User } from '@/assets/db/types'
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/assets/db/schema'
 import { useState } from 'react';
 import { router } from 'expo-router';
 
 import * as Crypto from 'expo-crypto'
-
-
+import { and, eq } from 'drizzle-orm';
 
 export default function HomeScreen()
 {
@@ -15,6 +15,7 @@ export default function HomeScreen()
   const [password, setPassword] = useState('')
 
   const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, {schema})
 
   async function login()
   {
@@ -25,28 +26,32 @@ export default function HomeScreen()
       return;
     }
 
-    try
-    {
-      const user = await db.getFirstAsync<User>(
-        'SELECT * FROM users WHERE email = ? AND password = ?',
-        [email.trim().toLowerCase(), await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)]
+    const [user] = await drizzleDb.select()
+      .from(schema.users)
+      .where(
+        and(
+          eq(schema.users.email, email.trim().toLocaleLowerCase()),
+          eq(schema.users.password, await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password))
+        )
       )
-      if (user)
-      {
-        console.log("Success", `Welcome back, ${user.email}`)
-        Alert.alert("Success", `Welcome back, ${user.email}`)
-        router.replace('/')
-      }
-      else
-      {
-        console.error("Failed", "Invalid email or password.", user)
-        Alert.alert("Failed", "Invalid email or password.")
-      }
-    }
-    catch (error)
+      .limit(1)
+
+    if (user)
     {
-      console.error(error)
-      Alert.alert("Database Error", "Something went wrong while logging in.")
+      console.log("Success", `Welcome back, ${user.email}`)
+      Alert.alert("Success", `Welcome back, ${user.email}`)
+
+      const token = Crypto.randomUUID()
+      const TIMEOUT_MILISECONDS = 1000 * 60 //1 minute in miliseconds
+
+      drizzleDb.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
+
+      router.replace('/') //redirect to index
+    }
+    else
+    {
+      console.error("Failed", "Invalid email or password.", user)
+      Alert.alert("Failed", "Invalid email or password.")
     }
   }
   function register()

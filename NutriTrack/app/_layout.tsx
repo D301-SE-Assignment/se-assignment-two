@@ -1,31 +1,27 @@
-import { Stack } from "expo-router"
-import "../global.css"
-import * as SQLite from 'expo-sqlite'
-import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite'
-import { Profile, Session, User } from '@/assets/db/types'
-import { migration } from "@/assets/db/nutri-track"
- 
+import "@/global.css"
+import { Stack } from 'expo-router';
+import { Suspense } from 'react';
+import { ActivityIndicator } from 'react-native';
+import { SQLiteProvider, openDatabaseSync } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import migrations from '@/assets/drizzle/migrations';
+
+export const DATABASE_NAME = 'nutritrack'
+
 export default function RootLayout()
 {
-	return <SQLiteProvider databaseName="nutri-track.db" assetSource={{ assetId: require('@/assets/db/nutri-track.db') }} onInit={migrateDBIfNeeded}><Stack screenOptions={{ headerShown: false }}/></SQLiteProvider>
-}
-
-//const db = useSQLiteContext()
-//const db2 = await SQLite.openDatabaseAsync('nutri-track.db')
-
-async function migrateDBIfNeeded(db:SQLite.SQLiteDatabase)
-{
-	console.log("Initializing Database!")
-	try
-	{
-		await db.execAsync(migration)
-		console.log("Database initialized successfully!");
-		console.info(await db.getAllAsync<Session>('SELECT * FROM sessions'))
-		console.info(await db.getAllAsync<User>('SELECT * FROM users'))
-		console.info(await db.getAllAsync<Profile>('SELECT * FROM profiles'))
-	}
-	catch (error)
-	{
-		console.error("Error initializing database:", error);
-	}
+	const exooDb = openDatabaseSync(DATABASE_NAME)
+	const db = drizzle(exooDb)
+	const { success, error } = useMigrations(db, migrations)
+	return (
+	<Suspense fallback={<ActivityIndicator size="large"/>}>
+		<SQLiteProvider
+			databaseName={ DATABASE_NAME }
+			options={{ enableChangeListener: true }}
+			useSuspense>
+				<Stack screenOptions={{ headerShown: false }}/>
+		</SQLiteProvider>
+	</Suspense>
+	)
 }
