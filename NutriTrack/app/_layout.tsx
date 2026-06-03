@@ -57,10 +57,10 @@ export default function RootLayout() {
 			globalExpoDb = nativeDb;
 			db = drizzle(nativeDb);
 			setIsDbReady(true)
+			console.log("RootLayout rendered. isDbReady:", isDbReady, "globalExpoDb:", globalExpoDb)
 			}}
 			useSuspense 
 		>
-			{console.log("RootLayout rendered. isDbReady:", isDbReady, "globalExpoDb:", globalExpoDb)}
 			{isDbReady && globalExpoDb && (
 			<NativeStudioDebugger expoDb={globalExpoDb} />
 			)}
