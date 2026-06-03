@@ -20,6 +20,15 @@ export default function TabLayout()
 
   useDrizzleStudio(expoDb)
 
+  function options(title: string, icon: string)
+  {
+    return{
+      title: title,
+      tabBarIcon: () => <MaterialIcons size={28} name={icon} />,
+      //tabBarItemStyle: {display: 'none'}
+    }
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -35,11 +44,15 @@ export default function TabLayout()
           tabBarItemStyle: {display: 'flex'}
         }}
       />
+      <Tabs.Screen name="login" options={options("Login", "login")}/>
+      <Tabs.Screen name="register" options={options("Register", "web")}/>
       <Tabs.Screen
         name="test"
         options=
         {{
-          tabBarItemStyle: {display: 'none'}
+          title: 'DEBUG',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="bug-report" color={color} />,
+          //tabBarItemStyle: {display: 'none'}
         }}
       />
     </Tabs>
