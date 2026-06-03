@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks":
+	[
+		{
+			"label": "drizzle: generate",
+			"type": "shell",
+			"command": "npx drizzle-kit generate",
+			"options":
+			{
+				"cwd": "${workspaceFolder}/NutriTrack"
+			}
+		},
+		{
+			"label": "npm: start - NutriTrack",
+			"type": "npm",
+			"script": "start",
+			"path": "NutriTrack",
+			"problemMatcher": [],
+			"detail": "expo start",
+			"dependsOn": ["drizzle: generate"],
+			"group":
+			{
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}
