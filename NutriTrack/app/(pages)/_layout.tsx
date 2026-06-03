@@ -5,9 +5,20 @@ import { Platform, StyleSheet, View, ScrollView, Text, TextInput } from 'react-n
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import migrations from '@/assets/drizzle/migrations';
+import { useSQLiteContext } from 'expo-sqlite'
+import { useDrizzleStudio } from 'expo-drizzle-studio-plugin'
+
 
 export default function TabLayout()
 {
+  const expoDb = useSQLiteContext()
+  const drizzleDb = drizzle(expoDb)
+  const { success, error } = useMigrations(drizzleDb, migrations)
+
+  useDrizzleStudio(expoDb)
 
   return (
     <Tabs

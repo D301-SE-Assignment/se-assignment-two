@@ -56,7 +56,7 @@ export default function HomeScreen()
 
     const token = Crypto.randomUUID()
     const TIMEOUT_MILISECONDS = 1000 * 60 //1 minute in miliseconds
-    drizzleDb.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
+    await drizzleDb.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
 
     console.log("Success", `Account created! You can now log in.`)
     Alert.alert("Success", `Account created! You can now log in.`)
