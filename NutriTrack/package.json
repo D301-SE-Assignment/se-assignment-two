@@ -3,12 +3,13 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "lint": "expo lint"
+    "expo: start": "expo start",
+    "expo: reset-project": "node ./scripts/reset-project.js",
+    "expo: android": "expo start --android",
+    "expo: ios": "expo start --ios",
+    "expo: web": "expo start --web",
+    "expo: lint": "expo lint",
+    "drizzle: generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
