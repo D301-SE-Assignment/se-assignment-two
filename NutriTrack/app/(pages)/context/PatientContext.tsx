@@ -52,3 +52,7 @@ export function usePatientContext() {
   }
   return context;
 }
+
+export default function PatientContextWrapper({ children }: { children: React.ReactNode }) {
+  return <PatientProvider>{children}</PatientProvider>;
+}

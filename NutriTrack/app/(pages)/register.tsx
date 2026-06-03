@@ -60,7 +60,7 @@ export default function HomeScreen()
 
     console.log("Success", `Account created! You can now log in.`)
     Alert.alert("Success", `Account created! You can now log in.`)
-    router.replace('/') //redirect to index
+    router.replace('/login') //redirect to login
   }
   return (
     <View className="justify-center p-10 flex-1">
