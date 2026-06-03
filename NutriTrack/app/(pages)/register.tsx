@@ -1,12 +1,13 @@
 import { Platform, StyleSheet, View, ScrollView, Button, Text, TextInput, Pressable, Alert } from 'react-native';
 
 import { useSQLiteContext } from 'expo-sqlite'
-import { User } from '@/assets/db/types'
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/assets/db/schema'
 import { useState } from 'react';
 import { router } from 'expo-router';
 
 import * as Crypto from 'expo-crypto'
-
+import { and, eq } from 'drizzle-orm';
 
 export default function HomeScreen()
 {
@@ -15,6 +16,7 @@ export default function HomeScreen()
   const [password2, setPassword2] = useState('')
 
   const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, {schema})
 
   async function login()
   {
@@ -37,22 +39,24 @@ export default function HomeScreen()
       return;
     }
 
-    try
+    
+    const users = await drizzleDb.select()
+          .from(schema.users)
+          .where(eq(schema.users.email, email.trim().toLocaleLowerCase()))
+    if (users.length > 0)
     {
-      await db.runAsync(
-        'INSERT INTO users (email, password) VALUES (?, ?)',
-        [email.trim().toLowerCase(), await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)]
-      )
+      console.error("Error", "Email already in use.")
+      Alert.alert("Error", "Email already in use.")
+      return;
+    }
 
-      console.log("Success", `Account created! You can now log in.`)
-      Alert.alert("Success", `Account created! You can now log in.`)
-      router.replace('/login')
-    }
-    catch (error)
-    {
-      console.error(error)
-      Alert.alert("Database Error", "Something went wrong while registering.")
-    }
+    const [user] = await drizzleDb.insert(schema.users)
+      .values({email: email.trim().toLowerCase(), password: await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)})
+      .returning()
+
+    console.log("Success", `Account created! You can now log in.`)
+    Alert.alert("Success", `Account created! You can now log in.`)
+    router.replace('/login') //redirect to login
   }
   return (
     <View className="justify-center p-10 flex-1">
