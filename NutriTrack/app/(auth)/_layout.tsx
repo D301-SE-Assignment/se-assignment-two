@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, View, ScrollView, Text, TextInput } from 'react-native';
 
@@ -24,7 +24,8 @@ export default function TabLayout()
     }
   }
 
-  //if (!isAutenticated) router.replace('/login')
+  const isAutenticated = true
+  if (isAutenticated) router.replace('/')
 
   return (
     <Tabs
