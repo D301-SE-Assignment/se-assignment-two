@@ -2,12 +2,21 @@ import { Stack } from "expo-router"
 import "../global.css"
 import * as SQLite from 'expo-sqlite'
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite'
-import { User } from '@/assets/db/types'
+import { PatientProvider, usePatientContext } from "./(pages)/context/PatientContext"
 import { migration } from "@/assets/db/nutri-track"
  
-export default function RootLayout()
-{
-	return <SQLiteProvider databaseName="nutri-track.db" assetSource={{ assetId: require('@/assets/db/nutri-track.db') }} onInit={migrateDBIfNeeded}><Stack screenOptions={{ headerShown: false }}/></SQLiteProvider>
+export default function RootLayout() {
+  return (
+    <SQLiteProvider
+      databaseName="nutri-track.db"
+      assetSource={{ assetId: require("@/assets/db/nutri-track.db") }}
+      onInit={migrateDBIfNeeded}
+    >
+      <PatientProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+      </PatientProvider>
+    </SQLiteProvider>
+  );
 }
 
 //const db = useSQLiteContext()
