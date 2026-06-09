@@ -3,6 +3,7 @@ import React from 'react';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function TabLayout()
 {
@@ -15,7 +16,9 @@ export default function TabLayout()
     }
   }
 
-  //if (!isAutenticated) router.replace('/login')
+  const auth = useAuth()
+  if (!auth.isAuthenticated)
+    router.replace('/login')
 
   return (
     <Tabs

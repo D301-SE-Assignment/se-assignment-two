@@ -8,9 +8,11 @@ import { router } from 'expo-router';
 
 import * as Crypto from 'expo-crypto'
 import { and, eq } from 'drizzle-orm';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function HomeScreen()
 {
+  const auth = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -45,6 +47,7 @@ export default function HomeScreen()
       const TIMEOUT_MILISECONDS = 1000 * 60 //1 minute in miliseconds
 
       await drizzleDb.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
+      await auth.login(token)
 
       router.replace('/') //redirect to index
     }
