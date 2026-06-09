@@ -117,21 +117,21 @@ export default function HomeScreen() {
             bg="bg-blue-50"
             label="Update weight"
             sub="Track body weight"
-            onPress={() => router.push("./(pages)/weight/add")}
+            onPress={() => router.push("./(pages)/weight/")} // 🔧 swap with actual weight page
           />
           <ActionTile
             icon="📊"
             bg="bg-amber-50"
             label="Daily report"
             sub="View today's summary"
-            onPress={() => router.push("./(pages)/report")}
+            onPress={() => router.push("./(pages)/report")} // 🔧 swap with actual report page
           />
           <ActionTile
             icon="🎯"
             bg="bg-purple-50"
             label="Energy goal"
             sub="Adjust calorie target"
-            onPress={() => router.push("./(pages)/settings/goal")}
+            onPress={() => router.push("./(pages)/settings/goal")} //swap with actual settings page
           />
         </View>
       </View>
