@@ -25,7 +25,7 @@ export function AuthProvider({children}: { children: ReactNode })
 			try
 			{
 				const userToken = await getAuthToken()
-				//setToken(userToken)
+				setToken(userToken)
 			}
 			catch (error) {}
 			finally
@@ -68,7 +68,7 @@ async function getAuthToken()
 {
     if (Platform.OS === 'web')
     {
-        localStorage.getItem(TOKEN_STORAGE)
+        return localStorage.getItem(TOKEN_STORAGE)
     }
     else
     {
