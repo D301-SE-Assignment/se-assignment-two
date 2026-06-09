@@ -30,14 +30,14 @@
       [
         "expo-router",
         {
-          "headers":
-          {
+          "headers": {
             "Cross-Origin-Embedder-Policy": "credentialless",
             "Cross-Origin-Opener-Policy": "same-origin"
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
