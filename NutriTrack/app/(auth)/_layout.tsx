@@ -1,17 +1,8 @@
 import { router, Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, StyleSheet, View, ScrollView, Text, TextInput } from 'react-native';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
-
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import migrations from '@/assets/drizzle/migrations';
-import { useSQLiteContext } from 'expo-sqlite'
-import { useDrizzleStudio } from 'expo-drizzle-studio-plugin'
-import { useDrizzleContext } from '@/components/DrizzleProvider';
-
 
 export default function TabLayout()
 {
