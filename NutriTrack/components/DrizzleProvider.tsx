@@ -4,8 +4,9 @@ import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { openDatabaseSync, SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { createContext, ReactNode, Suspense, useContext, useMemo } from "react";
 import { Platform, Text, View} from "react-native";
+import * as schema from "@/assets/db/schema"
 
-const DrizzleContext = createContext<ExpoSQLiteDatabase | null>(null)
+const DrizzleContext = createContext<ExpoSQLiteDatabase<typeof schema> | null>(null)
 
 type Migrations =
 {
@@ -25,7 +26,7 @@ type Migrations =
 function DrizzleCore({children, migrations, loadingScreen, debug = false}: { children: ReactNode, migrations: Migrations, loadingScreen: ReactNode, debug?: boolean })
 {
     const expoDB = useSQLiteContext()
-    const drizzleDB = drizzle(expoDB);//useMemo(() => drizzle(expoDB), [expoDB])
+    const drizzleDB = drizzle<typeof schema>(expoDB);//useMemo(() => drizzle(expoDB), [expoDB])
     const { success, error } = useMigrations(drizzleDB, migrations)
   
     if (debug) useDrizzleStudio(expoDB)

@@ -1,6 +1,10 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react"
 import { deleteItemAsync, getItemAsync, setItemAsync } from 'expo-secure-store'
 import { Platform } from "react-native"
+import { useDrizzleContext } from "./DrizzleProvider"
+import * as schema from "@/assets/db/schema"
+import { eq } from "drizzle-orm"
+import { ExpoSQLiteDatabase } from "drizzle-orm/expo-sqlite"
 
 interface AuthContextType
 {
@@ -18,14 +22,19 @@ export function AuthProvider({children}: { children: ReactNode })
 	const [token, setToken] = useState<string|null>(null)
 	const [isLoading, setIsLoading] = useState(true)
 
+	const drizzleDB = useDrizzleContext()
+
 	useEffect(() =>
 	{
 		const bootstrapAsync = async () =>
 		{
 			try
 			{
-				const userToken = await getAuthToken()
-				setToken(userToken)
+				const userToken = await getAuthToken() ?? ''
+
+				const [session] = await drizzleDB.select().from(schema.sessions).where(eq(schema.sessions.token, userToken)) ?? []
+				if (session)
+					setToken(session.token)
 			}
 			catch (error) {}
 			finally
