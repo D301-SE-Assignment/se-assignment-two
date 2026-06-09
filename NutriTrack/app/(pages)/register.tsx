@@ -1,5 +1,4 @@
 import { Platform, StyleSheet, View, ScrollView, Button, Text, TextInput, Pressable, Alert } from 'react-native';
-
 import { useSQLiteContext } from 'expo-sqlite'
 import { User } from '@/assets/db/types'
 import { useState } from 'react';
