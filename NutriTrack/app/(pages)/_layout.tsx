@@ -26,17 +26,11 @@ export default function TabLayout()
         headerShown: false,
         tabBarItemStyle: {display: 'flex'}
       }}>
-      <Tabs.Screen
-        name="index"
-        options=
-        {{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="home" color={color} />,
-          tabBarItemStyle: {display: 'flex'}
-        }}
-      />
-      <Tabs.Screen name="login" options={options("Login", "login")}/>
-      <Tabs.Screen name="register" options={options("Register", "web")}/>
+      <Tabs.Screen name="index" options={options("Dashboard", "home")}/>
+      <Tabs.Screen name="patients/index" options={options("Patients", "group")}/>
+      <Tabs.Screen name="patients/id" options={options("Patients", "person")}/>
+      <Tabs.Screen name="patients/add" options={options("New Profile", "person-add")}/>
+      <Tabs.Screen name="logout" options={options("Logout", "logout")}/>
       <Tabs.Screen
         name="test"
         options=
