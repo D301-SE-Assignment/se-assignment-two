@@ -31,6 +31,32 @@ export default function HomeScreen()
       )[0]
   }
 
+  async function loginAs(email:string, password:string)
+  {
+    const [user] = await drizzleDB.select()
+      .from(schema.users)
+      .where(
+        and(
+          eq(schema.users.email, email.trim().toLocaleLowerCase()),
+          eq(schema.users.password, await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password))
+        )
+      )
+      .limit(1)
+
+    if (user)
+    {
+      const token = Crypto.randomUUID()
+      const TIMEOUT_MILISECONDS = 1000 * 60 //1 minute in miliseconds
+
+      await drizzleDB.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
+      await auth.login(token)
+      return
+    }
+
+    addUser(email, password)
+    return loginAs(email, password)
+  }
+
   const [xmlData1, setXmalData1] = useState('');
   const [xmlData2, setXmalData2] = useState('');
 
@@ -59,10 +85,9 @@ export default function HomeScreen()
   }
 
   return (
-    <ScrollView>
-      <Text>{useRoute().name}</Text>
+    <ScrollView className="justify-center items-center p-10 flex-1">
       <Pressable className="self-center" onPress={()=>addUser('test', 'test1')}><Text className='text-blue-500'>Add test user</Text></Pressable>
-
+      <Pressable className="self-center" onPress={()=>loginAs('test', 'test1')}><Text className='text-blue-500'>Login as test user</Text></Pressable>
       <Pressable className="self-center" onPress={()=>printTable(schema.users, setXmalData1)}><Text className='text-blue-500'>Print users</Text></Pressable>
       <Text>{xmlData1}</Text>
       <Pressable className="self-center" onPress={()=>printTable(schema.sessions, setXmalData2)}><Text className='text-blue-500'>Print sessions</Text></Pressable>

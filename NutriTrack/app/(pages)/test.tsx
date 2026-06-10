@@ -33,6 +33,7 @@ export default function HomeScreen()
 
   const [xmlData1, setXmalData1] = useState('');
   const [xmlData2, setXmalData2] = useState('');
+  const [xmlData3, setXmalData3] = useState('');
 
   async function printTable(table: SQLiteTable, setXmlData: Dispatch<SetStateAction<string>>)
   {
@@ -58,15 +59,27 @@ export default function HomeScreen()
     }
   }
 
-  return (
-    <ScrollView>
-      <Text>{useRoute().name}</Text>
-      <Pressable className="self-center" onPress={()=>addUser('test', 'test1')}><Text className='text-blue-500'>Add test user</Text></Pressable>
+  async function getProfiles(token: string|null,  setXmlData: Dispatch<SetStateAction<string>>)
+  {
+    const result = await drizzleDB.select()
+      .from(schema.sessions)
+      .where(eq(schema.sessions.token, token ?? ''))
+      .innerJoin(schema.users, eq(schema.sessions.user_id, schema.users.id))
+      .leftJoin(schema.profiles, eq(schema.sessions.profile_id, schema.profiles.id))
 
+      console.info(result)
+      setXmlData(JSON.stringify(result, null, '\t'))
+  }
+
+  return (
+    <ScrollView className="justify-center p-10 flex-1">
       <Pressable className="self-center" onPress={()=>printTable(schema.users, setXmalData1)}><Text className='text-blue-500'>Print users</Text></Pressable>
       <Text>{xmlData1}</Text>
       <Pressable className="self-center" onPress={()=>printTable(schema.sessions, setXmalData2)}><Text className='text-blue-500'>Print sessions</Text></Pressable>
       <Text>{xmlData2}</Text>
+
+      <Pressable className="self-center" onPress={()=>getProfiles(auth.token, setXmalData3)}><Text className='text-blue-500'>Print authorized DB</Text></Pressable>
+      <Text>{xmlData3}</Text>
     </ScrollView>
   );
 };
