@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { usePatientContext, Patient } from '../context/PatientContext';
+import { usePatientContext, Patient } from '@/components/PatientContext';
 import { ActivityIndicator } from 'react-native';
 
 export default function PatientListScreen() {

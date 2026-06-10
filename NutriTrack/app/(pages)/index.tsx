@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { usePatientContext } from "./context/PatientContext";
+import { usePatientContext } from "@/components/PatientContext";
 
 const CURRENT_USER = "Bibek "; // 🔧 swap with auth context later
 const ENERGY_GOAL = 1000; // 🔧 swap with settings context later

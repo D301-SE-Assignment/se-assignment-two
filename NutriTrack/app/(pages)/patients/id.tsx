@@ -12,7 +12,7 @@ import {
   Ethnicity,
   Gender,
   usePatientContext,
-} from "../context/PatientContext";
+} from "@/components/PatientContext";
 
 const GENDERS: Gender[] = ["male", "female", "other"];
 const ETHNICITIES: Ethnicity[] = [
