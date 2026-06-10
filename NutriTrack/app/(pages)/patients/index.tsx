@@ -59,7 +59,7 @@ export default function PatientListScreen() {
           renderItem={({ item }) => (
             <PatientCard
               patient={item}
-              onPress={() => router.push(`./(pages)/patients/${item.id}`)}
+              onPress={() => router.push(`/(pages)/patients/${item.id}`)}
               onDelete={() => confirmDelete(item.id, item.name)}
             />
           )}

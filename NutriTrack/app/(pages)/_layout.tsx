@@ -28,7 +28,7 @@ export default function TabLayout()
       }}>
       <Tabs.Screen name="index" options={options("Dashboard", "home")}/>
       <Tabs.Screen name="patients/index" options={options("Patients", "group")}/>
-      <Tabs.Screen name="patients/id" options={options("Patients", "person")}/>
+      <Tabs.Screen name="patients/[id]" options={options("Edit Profile", "person")}/>
       <Tabs.Screen name="patients/add" options={options("New Profile", "person-add")}/>
       <Tabs.Screen name="logout" options={options("Logout", "logout")}/>
       <Tabs.Screen
