@@ -10,16 +10,18 @@ import * as Crypto from 'expo-crypto'
 import { and, eq, getTableColumns } from 'drizzle-orm';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { SQLiteTable, SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core';
+import { useAuth } from '@/components/AuthProvider';
+import { useDrizzleContext } from '@/components/DrizzleProvider';
 
 export default function HomeScreen()
 {
-  const db = useSQLiteContext();
-  const drizzleDb = drizzle(db, {schema})
+  const drizzleDB = useDrizzleContext()
+  const auth = useAuth()
 
   async function addUser(email:string, password:string)
   {
     return (
-      await drizzleDb.insert(schema.users)
+      await drizzleDB.insert(schema.users)
         .values(
           {
             email: email.trim().toLowerCase(),
@@ -37,7 +39,7 @@ export default function HomeScreen()
     try
     {
       const cols = Object.keys(getTableColumns(table))
-      const rows = await drizzleDb.select().from(table)
+      const rows = await drizzleDB.select().from(table)
 
       let xmlString = `${cols.map((key) => `${key}`).join('\t')}\n`
       if (rows.length > 0)
