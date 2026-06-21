@@ -9,15 +9,15 @@ import { router } from 'expo-router';
 import * as Crypto from 'expo-crypto'
 import { and, eq } from 'drizzle-orm';
 import { useAuth } from '@/components/AuthProvider';
+import { useDrizzleContext } from '@/components/DrizzleProvider';
 
 export default function HomeScreen()
 {
+  const drizzleDB = useDrizzleContext()
   const auth = useAuth()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
-  const db = useSQLiteContext();
-  const drizzleDb = drizzle(db, {schema})
 
   async function login()
   {
@@ -28,7 +28,7 @@ export default function HomeScreen()
       return;
     }
 
-    const [user] = await drizzleDb.select()
+    const [user] = await drizzleDB.select()
       .from(schema.users)
       .where(
         and(
@@ -46,7 +46,7 @@ export default function HomeScreen()
       const token = Crypto.randomUUID()
       const TIMEOUT_MILISECONDS = 1000 * 60 //1 minute in miliseconds
 
-      await drizzleDb.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
+      await drizzleDB.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
       await auth.login(token)
 
       router.replace('/') //redirect to index

@@ -7,15 +7,17 @@ import { router } from 'expo-router';
 
 import * as Crypto from 'expo-crypto'
 import { and, eq } from 'drizzle-orm';
+import { useDrizzleContext } from '@/components/DrizzleProvider';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function HomeScreen()
 {
+  const drizzleDB = useDrizzleContext()
+  const auth = useAuth()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [password2, setPassword2] = useState('')
-
-  const db = useSQLiteContext();
-  const drizzleDb = drizzle(db, {schema})
 
   async function login()
   {
@@ -39,7 +41,7 @@ export default function HomeScreen()
     }
 
     
-    const users = await drizzleDb.select()
+    const users = await drizzleDB.select()
           .from(schema.users)
           .where(eq(schema.users.email, email.trim().toLocaleLowerCase()))
     if (users.length > 0)
@@ -49,7 +51,7 @@ export default function HomeScreen()
       return;
     }
 
-    const [user] = await drizzleDb.insert(schema.users)
+    const [user] = await drizzleDB.insert(schema.users)
       .values({email: email.trim().toLowerCase(), password: await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)})
       .returning()
 

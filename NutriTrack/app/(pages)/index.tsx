@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { usePatientContext } from "./context/PatientContext";
+import { usePatientContext } from "@/components/PatientContext";
+import { useAuth } from "@/components/AuthProvider";
+import { useDrizzleContext } from "@/components/DrizzleProvider";
 
 const CURRENT_USER = "Bibek "; // 🔧 swap with auth context later
 const ENERGY_GOAL = 1000; // 🔧 swap with settings context later
@@ -39,7 +41,11 @@ function getTimeOfDay(): keyof typeof GREETINGS {
   return "evening";
 }
 
-export default function HomeScreen() {
+export default function HomeScreen()
+{
+  const drizzleDB = useDrizzleContext()
+  const auth = useAuth()
+
   const { loading } = usePatientContext();
   const router = useRouter();
   const tod = getTimeOfDay();

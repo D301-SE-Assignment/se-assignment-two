@@ -10,16 +10,18 @@ import * as Crypto from 'expo-crypto'
 import { and, eq, getTableColumns } from 'drizzle-orm';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { SQLiteTable, SQLiteTableWithColumns } from 'drizzle-orm/sqlite-core';
+import { useAuth } from '@/components/AuthProvider';
+import { useDrizzleContext } from '@/components/DrizzleProvider';
 
 export default function HomeScreen()
 {
-  const db = useSQLiteContext();
-  const drizzleDb = drizzle(db, {schema})
+  const drizzleDB = useDrizzleContext()
+  const auth = useAuth()
 
   async function addUser(email:string, password:string)
   {
     return (
-      await drizzleDb.insert(schema.users)
+      await drizzleDB.insert(schema.users)
         .values(
           {
             email: email.trim().toLowerCase(),
@@ -27,6 +29,32 @@ export default function HomeScreen()
           })
         .returning()
       )[0]
+  }
+
+  async function loginAs(email:string, password:string)
+  {
+    const [user] = await drizzleDB.select()
+      .from(schema.users)
+      .where(
+        and(
+          eq(schema.users.email, email.trim().toLocaleLowerCase()),
+          eq(schema.users.password, await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password))
+        )
+      )
+      .limit(1)
+
+    if (user)
+    {
+      const token = Crypto.randomUUID()
+      const TIMEOUT_MILISECONDS = 1000 * 60 //1 minute in miliseconds
+
+      await drizzleDB.insert(schema.sessions).values({token: token, user_id: user.id, expiry: Date.now() + TIMEOUT_MILISECONDS})
+      await auth.login(token)
+      return
+    }
+
+    addUser(email, password)
+    return loginAs(email, password)
   }
 
   const [xmlData1, setXmalData1] = useState('');
@@ -37,7 +65,7 @@ export default function HomeScreen()
     try
     {
       const cols = Object.keys(getTableColumns(table))
-      const rows = await drizzleDb.select().from(table)
+      const rows = await drizzleDB.select().from(table)
 
       let xmlString = `${cols.map((key) => `${key}`).join('\t')}\n`
       if (rows.length > 0)
@@ -57,10 +85,9 @@ export default function HomeScreen()
   }
 
   return (
-    <ScrollView>
-      <Text>{useRoute().name}</Text>
+    <ScrollView className="justify-center items-center p-10 flex-1">
       <Pressable className="self-center" onPress={()=>addUser('test', 'test1')}><Text className='text-blue-500'>Add test user</Text></Pressable>
-
+      <Pressable className="self-center" onPress={()=>loginAs('test', 'test1')}><Text className='text-blue-500'>Login as test user</Text></Pressable>
       <Pressable className="self-center" onPress={()=>printTable(schema.users, setXmalData1)}><Text className='text-blue-500'>Print users</Text></Pressable>
       <Text>{xmlData1}</Text>
       <Pressable className="self-center" onPress={()=>printTable(schema.sessions, setXmalData2)}><Text className='text-blue-500'>Print sessions</Text></Pressable>
