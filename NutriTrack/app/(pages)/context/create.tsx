@@ -1,18 +1,18 @@
 import { useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import {
-    Ethnicity,
-    Gender,
-    usePatientContext as usePatient,
+  Ethnicity,
+  Gender,
+  usePatientContext as usePatient,
 } from "@/app/(pages)/context/PatientContext";
 import { useRouter } from "expo-router";
 
@@ -31,9 +31,8 @@ const ethnicityOptions: Ethnicity[] = [
 export default function CreatePatientScreen() {
   const { addPatient } = usePatient();
   const router = useRouter();
-
   const [name, setName] = useState("");
-  const [age, setAge] = useState("");
+  const [birthdate, setBirthdate] = useState("");
   const [gender, setGender] = useState<Gender | null>(null);
   const [ethnicity, setEthnicity] = useState<Ethnicity | null>(null);
   const [height, setHeight] = useState("");
@@ -43,8 +42,8 @@ export default function CreatePatientScreen() {
       return Alert.alert("Validation Error", "Name is required");
     }
 
-    if (!age || isNaN(Number(age)) || Number(age) <= 0 || Number(age) > 120) {
-      return Alert.alert("Validation Error", "Please enter a valid age");
+    if (!birthdate.trim()) {
+      return Alert.alert("Validation Error", "Birthdate is required");
     }
 
     if (!gender) {
@@ -55,17 +54,20 @@ export default function CreatePatientScreen() {
       return Alert.alert("Validation Error", "Please select an ethnicity");
     }
 
-    if (height && (isNaN(Number(height)) || Number(height) <= 0 || Number(height) > 250)) {
+    if (
+      height &&
+      (isNaN(Number(height)) || Number(height) <= 0 || Number(height) > 250)
+    ) {
       return Alert.alert("Validation Error", "Please enter a valid height");
     }
 
-   addPatient({
-        name: name,
-        age: Number(age),
-        gender: gender,
-        ethnicity: ethnicity,
-        height: 0, // Default height, can be updated later
-     });
+    addPatient({
+      name: name,
+      birthdate: String(birthdate),
+      gender: gender,
+      ethnicity: ethnicity,
+      height: 0, // Default height, can be updated later
+    });
 
     router.back();
   };
@@ -83,14 +85,13 @@ export default function CreatePatientScreen() {
         onChangeText={setName}
       />
 
-      {/* Age Input */}
-      <Text style={styles.label}>Age</Text>
+      {/* Birthdate Input */}
+      <Text style={styles.label}>Birthdate</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter age"
-        value={age}
-        onChangeText={setAge}
-        keyboardType="numeric"
+        placeholder="YYYY-MM-DD"
+        value={birthdate}
+        onChangeText={setBirthdate}
       />
 
       {/* Gender Selection */}
@@ -100,7 +101,7 @@ export default function CreatePatientScreen() {
           <TouchableOpacity
             key={g}
             style={[styles.chip, gender === g && styles.chipSelected]}
-            onPress={() => setGender(gender ===g ? null : g)}
+            onPress={() => setGender(gender === g ? null : g)}
           >
             <Text
               style={[styles.chipText, gender === g && styles.chipTextSelected]}
