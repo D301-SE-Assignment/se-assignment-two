@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -22,14 +23,19 @@ export default function PatientListScreen() {
   }
 
   function confirmDelete(id: string, name: string) {
-    Alert.alert("Delete Patient", `Remove ${name}? This cannot be undone.`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => deletePatient(id),
-      },
-    ]);
+    const message = `Remove ${name}? This cannot be undone.`;
+    if (Platform.OS === "web") {
+      if (window.confirm(message)) deletePatient(id);
+    } else {
+      Alert.alert("Delete Patient", message, [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deletePatient(id),
+        },
+      ]);
+    }
   }
 
   return (
@@ -67,7 +73,7 @@ export default function PatientListScreen() {
           renderItem={({ item }) => (
             <PatientCard
               patient={item}
-              onPress={() => router.push(`./(pages)/patients/${item.id}`)}
+              onPress={() => router.push(`/(pages)/patients/${item.id}`)}
               onDelete={() => confirmDelete(item.id, item.name)}
             />
           )}
@@ -125,10 +131,7 @@ function PatientCard({
 
       {/* Delete button — sibling, not nested */}
       <TouchableOpacity
-        onPress={() => {
-          console.log("TRASH TAPPED", patient.id);
-          onDelete();
-        }}
+        onPress={() => onDelete()}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         className="ml-2 p-2"
       >
