@@ -2,11 +2,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
+  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import {
   Ethnicity,
@@ -23,6 +24,8 @@ const ETHNICITIES: Ethnicity[] = [
   "Other",
 ];
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
 export default function PatientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getPatientById, updatePatient, deletePatient } = usePatientContext();
@@ -32,11 +35,17 @@ export default function PatientDetailScreen() {
 
   // ── All hooks must come before any conditional return ──────────────────────
   const [name, setName] = useState(patient?.name ?? "");
-  const [age, setAge] = useState(String(patient?.age ?? ""));
+  const [birthdate, setBirthdate] = useState(patient?.birthdate ?? "");
   const [height, setHeight] = useState(String(patient?.height ?? ""));
   const [gender, setGender] = useState<Gender>(patient?.gender ?? "other");
   const [ethnicity, setEthnicity] = useState<Ethnicity>(
     patient?.ethnicity ?? "Other",
+  );
+  const [dietaryRequirements, setDietaryRequirements] = useState(
+    patient?.dietaryRequirements ?? "",
+  );
+  const [medicalConditions, setMedicalConditions] = useState(
+    patient?.medicalConditions ?? "",
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
@@ -52,13 +61,24 @@ export default function PatientDetailScreen() {
 
   function validate(): boolean {
     const next: Record<string, string> = {};
+
     if (!name.trim()) next.name = "Name is required.";
-    const ageNum = Number(age);
-    if (!age || isNaN(ageNum) || ageNum < 1 || ageNum > 120)
-      next.age = "Enter a valid age (1–120).";
+
+    if (!birthdate.trim()) {
+      next.birthdate = "Birthdate is required.";
+    } else if (!DATE_REGEX.test(birthdate.trim())) {
+      next.birthdate = "Use the format YYYY-MM-DD.";
+    } else {
+      const parsed = new Date(birthdate.trim());
+      if (isNaN(parsed.getTime()) || parsed > new Date()) {
+        next.birthdate = "Enter a valid date in the past.";
+      }
+    }
+
     const heightNum = Number(height);
     if (!height || isNaN(heightNum) || heightNum < 50 || heightNum > 300)
       next.height = "Enter a valid height (50–300 cm).";
+
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -67,10 +87,12 @@ export default function PatientDetailScreen() {
     if (!validate()) return;
     await updatePatient(id, {
       name: name.trim(),
-      age: Number(age),
+      birthdate: birthdate.trim(),
       height: Number(height),
       gender,
       ethnicity,
+      dietaryRequirements: dietaryRequirements.trim() || undefined,
+      medicalConditions: medicalConditions.trim() || undefined,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -79,21 +101,32 @@ export default function PatientDetailScreen() {
   function handleDelete() {
     if (!patient) return;
 
-    Alert.alert(
-      "Delete Patient",
-      `Remove ${patient.name}? This cannot be undone.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await deletePatient(id);
-            router.replace("/(pages)/patients");
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(
+        `Remove ${patient.name}? This cannot be undone.`,
+      );
+      if (confirmed) {
+        deletePatient(id).then(() => {
+          router.replace("/(pages)/patients");
+        });
+      }
+    } else {
+      Alert.alert(
+        "Delete Patient",
+        `Remove ${patient.name}? This cannot be undone.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              await deletePatient(id);
+              router.replace("/(pages)/patients");
+            },
           },
-        },
-      ],
-    );
+        ],
+      );
+    }
   }
 
   return (
@@ -112,8 +145,33 @@ export default function PatientDetailScreen() {
         Edit Profile
       </Text>
       <Text className="text-sm text-gray-400 mb-6">
-        Created {new Date(patient.createdAt).toLocaleDateString("en-NZ")}
+        Created {new Date(patient.createdAt).toLocaleDateString("en-NZ")} ·{" "}
+        {patient.age} yrs old
       </Text>
+
+      {/* Log Meal */}
+      <TouchableOpacity
+        onPress={() => router.push(`/(pages)/meals?patientId=${patient.id}`)}
+        className="bg-green-500 rounded-lg py-3 items-center mb-3"
+      >
+        <Text className="text-white font-semibold">🍽️ Log Meal</Text>
+      </TouchableOpacity>
+
+      {/* Update Weight */}
+      <TouchableOpacity
+        onPress={() => router.push(`/(pages)/weight?patientId=${patient.id}`)}
+        className="bg-blue-500 rounded-lg py-3 items-center mb-3"
+      >
+        <Text className="text-white font-semibold">⚖️ Update Weight</Text>
+      </TouchableOpacity>
+
+      {/* Daily Report */}
+      <TouchableOpacity
+        onPress={() => router.push(`/(pages)/report?patientId=${patient.id}`)}
+        className="bg-amber-500 rounded-lg py-3 items-center mb-6"
+      >
+        <Text className="text-white font-semibold">📊 Daily Report</Text>
+      </TouchableOpacity>
 
       {/* Name */}
       <Field label="Full Name" error={errors.name}>
@@ -124,13 +182,15 @@ export default function PatientDetailScreen() {
         />
       </Field>
 
-      {/* Age */}
-      <Field label="Age" error={errors.age}>
+      {/* Birthdate */}
+      <Field label="Birthdate" error={errors.birthdate}>
         <TextInput
           className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800"
-          value={age}
-          onChangeText={setAge}
-          keyboardType="numeric"
+          value={birthdate}
+          onChangeText={setBirthdate}
+          placeholder="YYYY-MM-DD"
+          keyboardType="numbers-and-punctuation"
+          maxLength={10}
         />
       </Field>
 
@@ -190,6 +250,28 @@ export default function PatientDetailScreen() {
             </TouchableOpacity>
           ))}
         </View>
+      </Field>
+
+      {/* Dietary Requirements */}
+      <Field label="Dietary Requirements (optional)">
+        <TextInput
+          className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800"
+          value={dietaryRequirements}
+          onChangeText={setDietaryRequirements}
+          placeholder="e.g. Vegetarian, gluten-free"
+          multiline
+        />
+      </Field>
+
+      {/* Medical Conditions */}
+      <Field label="Medical Conditions (optional)">
+        <TextInput
+          className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800"
+          value={medicalConditions}
+          onChangeText={setMedicalConditions}
+          placeholder="e.g. Type 2 diabetes"
+          multiline
+        />
       </Field>
 
       {/* Save */}

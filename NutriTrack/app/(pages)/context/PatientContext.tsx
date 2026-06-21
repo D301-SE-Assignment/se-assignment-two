@@ -21,14 +21,17 @@ export type Ethnicity =
 export interface Patient {
   id: string;
   name: string;
-  age: number;
+  birthdate: string; // ISO date, e.g. "1990-05-12"
+  age: number; // computed from birthdate at read time
   height: number; // cm
   gender: Gender;
   ethnicity: Ethnicity;
+  dietaryRequirements?: string;
+  medicalConditions?: string;
   createdAt: string; // ISO 8601
 }
 
-type PatientInput = Omit<Patient, "id" | "createdAt">;
+type PatientInput = Omit<Patient, "id" | "createdAt" | "age">;
 
 interface PatientContextType {
   patients: Patient[];
@@ -47,16 +50,34 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-async function loadFromStorage(): Promise<Patient[]> {
+function calculateAge(birthdate: string): number {
+  const dob = new Date(birthdate);
+  if (isNaN(dob.getTime())) return 0;
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const monthDiff = now.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+type StoredPatient = Omit<Patient, "age">;
+
+function withAge(p: StoredPatient): Patient {
+  return { ...p, age: calculateAge(p.birthdate) };
+}
+
+async function loadFromStorage(): Promise<StoredPatient[]> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Patient[]) : [];
+    return raw ? (JSON.parse(raw) as StoredPatient[]) : [];
   } catch {
     return [];
   }
 }
 
-async function saveToStorage(patients: Patient[]): Promise<void> {
+async function saveToStorage(patients: StoredPatient[]): Promise<void> {
   try {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
   } catch {
@@ -69,7 +90,7 @@ async function saveToStorage(patients: Patient[]): Promise<void> {
 const PatientContext = createContext<PatientContextType | null>(null);
 
 export function PatientProvider({ children }: { children: React.ReactNode }) {
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patients, setPatients] = useState<StoredPatient[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load persisted patients on mount
@@ -80,14 +101,14 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const persist = async (updated: Patient[]) => {
+  const persist = async (updated: StoredPatient[]) => {
     setPatients(updated);
     await saveToStorage(updated);
   };
 
   const addPatient = useCallback(
     async (patient: PatientInput) => {
-      const newPatient: Patient = {
+      const newPatient: StoredPatient = {
         ...patient,
         id: generateId(),
         createdAt: new Date().toISOString(),
@@ -114,14 +135,17 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
   );
 
   const getPatientById = useCallback(
-    (id: string) => patients.find((p) => p.id === id),
+    (id: string) => {
+      const found = patients.find((p) => p.id === id);
+      return found ? withAge(found) : undefined;
+    },
     [patients],
   );
 
   return (
     <PatientContext.Provider
       value={{
-        patients,
+        patients: patients.map(withAge),
         loading,
         addPatient,
         updatePatient,

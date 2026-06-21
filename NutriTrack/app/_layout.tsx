@@ -5,6 +5,8 @@ import migrations from "@/assets/drizzle/migrations";
 import { DrizzleProvider } from "@/components/DrizzleProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { PatientProvider } from "./(pages)/context/PatientContext";
+import { MealProvider } from "./(pages)/context/MealContext";
+import { WeightProvider } from "./(pages)/context/WeightContext";
 
 export const DATABASE_NAME = Platform.OS === 'web' ? ':memory:' : 'nutritrack'
 //export const DATABASE_NAME = 'nutritrack'
@@ -16,7 +18,11 @@ export default function RootLayout()
 		debug={true}>
 		<AuthProvider>
 			<PatientProvider>
-				<Stack screenOptions={{ headerShown: false }} />
+        <MealProvider>
+          <WeightProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+          </WeightProvider>
+        </MealProvider>
 			</PatientProvider>
 		</AuthProvider>
 	</DrizzleProvider>

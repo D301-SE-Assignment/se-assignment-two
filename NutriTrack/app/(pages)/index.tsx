@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import React from "react";
+// nest it alongside PatientProvider
 import {
   ActivityIndicator,
   ScrollView,
@@ -117,7 +118,7 @@ export default function HomeScreen() {
             bg="bg-blue-50"
             label="Update weight"
             sub="Track body weight"
-            onPress={() => router.push("./(pages)/weight/")} // 🔧 swap with actual weight page
+            onPress={() => router.push("/(pages)/weight")}
           />
           <ActionTile
             icon="📊"
