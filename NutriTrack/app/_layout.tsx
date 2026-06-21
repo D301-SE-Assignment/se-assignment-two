@@ -1,37 +1,21 @@
-import { Stack } from "expo-router"
-import "../global.css"
-import * as SQLite from 'expo-sqlite'
-import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite'
-import { PatientProvider, usePatientContext } from "./(pages)/context/PatientContext"
-import { migration } from "@/assets/db/nutri-track"
- 
+import { Stack } from "expo-router";
+import { SQLiteProvider } from "expo-sqlite";
+
+import "../global.css";
+import { MealProvider } from "./(pages)/context/MealContext";
+import { PatientProvider } from "./(pages)/context/PatientContext";
+import { WeightProvider } from "./(pages)/context/WeightContext";
+
 export default function RootLayout() {
   return (
-    <SQLiteProvider
-      databaseName="nutri-track.db"
-      assetSource={{ assetId: require("@/assets/db/nutri-track.db") }}
-      onInit={migrateDBIfNeeded}
-    >
+    <SQLiteProvider databaseName="patients.db">
       <PatientProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+        <MealProvider>
+          <WeightProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+          </WeightProvider>
+        </MealProvider>
       </PatientProvider>
     </SQLiteProvider>
   );
-}
-
-//const db = useSQLiteContext()
-//const db2 = await SQLite.openDatabaseAsync('nutri-track.db')
-
-async function migrateDBIfNeeded(db:SQLite.SQLiteDatabase)
-{
-	console.log("Initializing Database!")
-	try
-	{
-		await db.execAsync(migration)
-		console.log("Database initialized successfully!");
-	}
-	catch (error)
-	{
-		console.error("Error initializing database:", error);
-	}
 }
