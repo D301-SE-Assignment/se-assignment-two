@@ -13,7 +13,7 @@ import {
   Ethnicity,
   Gender,
   usePatientContext as usePatient,
-} from "@/app/(pages)/context/PatientContext";
+} from "@/components/PatientContext";
 import { useRouter } from "expo-router";
 
 const genderOptions: Gender[] = ["male", "female", "other"];

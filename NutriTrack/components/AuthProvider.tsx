@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react"
 import { deleteItemAsync, getItemAsync, setItemAsync } from 'expo-secure-store'
 import { Platform } from "react-native"
-import { useDrizzleContext } from "./DrizzleProvider"
+import { useDrizzleContext } from "@/components/DrizzleProvider"
 import * as schema from "@/assets/db/schema"
 import { eq } from "drizzle-orm"
 import { ExpoSQLiteDatabase } from "drizzle-orm/expo-sqlite"

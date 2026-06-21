@@ -4,9 +4,9 @@ import { ActivityIndicator, Platform } from 'react-native';
 import migrations from "@/assets/drizzle/migrations";
 import { DrizzleProvider } from "@/components/DrizzleProvider";
 import { AuthProvider } from "@/components/AuthProvider";
-import { PatientProvider } from "./(pages)/context/PatientContext";
-import { MealProvider } from "./(pages)/context/MealContext";
-import { WeightProvider } from "./(pages)/context/WeightContext";
+import { PatientProvider } from "@/components/PatientContext";
+import { MealProvider } from "@/components/MealContext";
+import { WeightProvider } from "@/components/WeightContext";
 
 export const DATABASE_NAME = Platform.OS === 'web' ? ':memory:' : 'nutritrack'
 //export const DATABASE_NAME = 'nutritrack'

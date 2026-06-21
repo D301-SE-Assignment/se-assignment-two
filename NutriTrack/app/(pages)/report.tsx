@@ -7,8 +7,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { Meal, MealType, useMealContext } from "./context/MealContext";
-import { usePatientContext } from "./context/PatientContext";
+import { Meal, MealType, useMealContext } from "@/components/MealContext";
+import { usePatientContext } from "@/components/PatientContext";
 
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 

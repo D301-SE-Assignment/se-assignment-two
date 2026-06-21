@@ -10,12 +10,12 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { usePatientContext } from "./context/PatientContext";
+import { usePatientContext } from "@/components/PatientContext";
 import {
     WeightEntry,
     WeightUnit,
     useWeightContext,
-} from "./context/WeightContext";
+} from "@/components/WeightContext";
 
 export default function WeightScreen() {
   const { patientId } = useLocalSearchParams<{ patientId: string }>();
