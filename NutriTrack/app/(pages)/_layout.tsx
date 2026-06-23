@@ -7,7 +7,12 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarItemStyle: { display: "flex" },
+        tabBarActiveTintColor: "#3b82f6",
+        tabBarInactiveTintColor: "#9ca3af",
+        tabBarStyle: {
+          borderTopColor: "#f3f4f6",
+          backgroundColor: "#ffffff",
+        },
       }}
     >
       <Tabs.Screen
@@ -15,17 +20,55 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name="home" color={color} />
+            <MaterialIcons size={24} name="home" color={color} />
           ),
-          tabBarItemStyle: { display: "flex" },
         }}
       />
       <Tabs.Screen
-        name="test"
+        name="patients/index"
         options={{
-          tabBarItemStyle: { display: "none" },
+          title: "Patients",
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons size={24} name="people" color={color} />
+          ),
         }}
       />
+      <Tabs.Screen
+        name="switch_profile"
+        options={{
+          title: "Switch",
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons size={24} name="swap-horiz" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="report"
+        options={{
+          title: "Report",
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons size={24} name="bar-chart" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons size={24} name="person" color={color} />
+          ),
+        }}
+      />
+
+      {/* Hidden screens */}
+      <Tabs.Screen name="test" options={{ href: null }} />
+      <Tabs.Screen name="LoginScreen" options={{ href: null }} />
+      <Tabs.Screen name="RegisterScreen" options={{ href: null }} />
+      <Tabs.Screen name="meals" options={{ href: null }} />
+      <Tabs.Screen name="weight" options={{ href: null }} />
+      <Tabs.Screen name="patients/add" options={{ href: null }} />
+      <Tabs.Screen name="patients/[id]" options={{ href: null }} />
     </Tabs>
   );
 }
