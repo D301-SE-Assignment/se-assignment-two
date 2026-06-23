@@ -7,13 +7,11 @@ import React, {
   useMemo,
   useState,
 } from "react";
-
 import { useAuthContext } from "./AuthContext";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type Gender = "male" | "female" | "other";
-
 export type Ethnicity =
   | "NZ Maori"
   | "NZ European"
@@ -23,7 +21,7 @@ export type Ethnicity =
 
 export interface Patient {
   id: string;
-  userId: number; // which account owns this patient
+  userId: number;
   name: string;
   birthdate: string;
   age: number;
@@ -40,6 +38,8 @@ type PatientInput = Omit<Patient, "id" | "createdAt" | "age" | "userId">;
 interface PatientContextType {
   patients: Patient[];
   loading: boolean;
+  lastViewedPatientId: string | null;
+  setLastViewedPatientId: (id: string) => Promise<void>;
   addPatient: (patient: PatientInput) => Promise<void>;
   updatePatient: (id: string, updates: Partial<PatientInput>) => Promise<void>;
   deletePatient: (id: string) => Promise<void>;
@@ -49,6 +49,7 @@ interface PatientContextType {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = "patient_records";
+const LAST_VIEWED_KEY = "last_viewed_patient_id";
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -96,16 +97,26 @@ const PatientContext = createContext<PatientContextType | null>(null);
 export function PatientProvider({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuthContext();
 
-  // Storage holds every account's patients in one flat list; we only ever
-  // expose the current user's slice of it through the context value below.
   const [allPatients, setAllPatients] = useState<StoredPatient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastViewedPatientId, setLastViewedPatientIdState] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
-    loadFromStorage().then((stored) => {
+    Promise.all([
+      loadFromStorage(),
+      AsyncStorage.getItem(LAST_VIEWED_KEY),
+    ]).then(([stored, lastId]) => {
       setAllPatients(stored);
+      if (lastId) setLastViewedPatientIdState(lastId);
       setLoading(false);
     });
+  }, []);
+
+  const setLastViewedPatientId = useCallback(async (id: string) => {
+    setLastViewedPatientIdState(id);
+    await AsyncStorage.setItem(LAST_VIEWED_KEY, id);
   }, []);
 
   const persist = async (updated: StoredPatient[]) => {
@@ -174,6 +185,8 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
       value={{
         patients: myPatients.map(withAge),
         loading,
+        lastViewedPatientId,
+        setLastViewedPatientId,
         addPatient,
         updatePatient,
         deletePatient,
