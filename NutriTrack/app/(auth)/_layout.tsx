@@ -25,7 +25,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="pRegisterScreen"
+        name="RegisterScreen"
         options={{
           title: "Register",
           tabBarIcon: ({ color }) => (
