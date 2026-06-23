@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Platform,
@@ -28,7 +28,12 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export default function PatientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getPatientById, updatePatient, deletePatient } = usePatientContext();
+  const {
+    getPatientById,
+    updatePatient,
+    deletePatient,
+    setLastViewedPatientId,
+  } = usePatientContext();
   const router = useRouter();
 
   const patient = getPatientById(id);
@@ -50,7 +55,11 @@ export default function PatientDetailScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
 
-  // ── Now safe to return early
+  useEffect(() => {
+    if (id) setLastViewedPatientId(id);
+  }, [id]);
+
+  // ── Now safe to return early ───────────────────────────────────────────────
   if (!patient) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
