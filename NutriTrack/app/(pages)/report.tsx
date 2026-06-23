@@ -1,12 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { DonutChart } from "./component/DonutChart";
 import { Meal, MealType, useMealContext } from "./context/MealContext";
 import { usePatientContext } from "./context/PatientContext";
 
@@ -17,6 +18,13 @@ const MEAL_TYPE_EMOJI: Record<MealType, string> = {
   lunch: "🥪",
   dinner: "🍽️",
   snack: "🍎",
+};
+
+const MEAL_TYPE_COLOR: Record<MealType, string> = {
+  breakfast: "#f59e0b", // amber
+  lunch: "#10b981", // emerald
+  dinner: "#6366f1", // indigo
+  snack: "#f43f5e", // rose
 };
 
 function toDateKey(date: Date): string {
@@ -78,6 +86,16 @@ export default function DailyReportScreen() {
     });
     return map;
   }, [dayMeals]);
+
+  const chartData = useMemo(
+    () =>
+      MEAL_TYPES.map((type) => ({
+        label: type,
+        value: caloriesByType[type],
+        color: MEAL_TYPE_COLOR[type],
+      })),
+    [caloriesByType],
+  );
 
   function goToPreviousDay() {
     setSelectedDate((d) => {
@@ -187,24 +205,66 @@ export default function DailyReportScreen() {
 
       {/* Breakdown by meal type */}
       <View className="bg-white mx-4 mt-3 rounded-2xl p-4 border border-gray-100">
-        <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+        <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
           Breakdown
         </Text>
-        <View className="gap-2">
-          {MEAL_TYPES.map((type) => (
-            <View key={type} className="flex-row items-center justify-between">
-              <View className="flex-row items-center gap-2">
-                <Text className="text-base">{MEAL_TYPE_EMOJI[type]}</Text>
-                <Text className="text-sm text-gray-600">
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </Text>
-              </View>
-              <Text className="text-sm font-semibold text-gray-800">
-                {caloriesByType[type]} kcal
-              </Text>
+
+        {totalCalories === 0 ? (
+          <View className="items-center py-4">
+            <DonutChart
+              data={chartData}
+              centerLabel="0"
+              centerSubLabel="kcal"
+            />
+            <Text className="text-sm text-gray-400 mt-4">
+              Log a meal to see today's breakdown.
+            </Text>
+          </View>
+        ) : (
+          <View className="flex-row items-center">
+            <DonutChart
+              data={chartData}
+              centerLabel={String(totalCalories)}
+              centerSubLabel="kcal"
+            />
+            <View className="flex-1 ml-5 gap-3">
+              {MEAL_TYPES.map((type) => {
+                const value = caloriesByType[type];
+                const pct =
+                  totalCalories > 0
+                    ? Math.round((value / totalCalories) * 100)
+                    : 0;
+                return (
+                  <View
+                    key={type}
+                    className="flex-row items-center justify-between"
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <View
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor: MEAL_TYPE_COLOR[type],
+                        }}
+                      />
+                      <Text className="text-sm text-gray-600">
+                        {MEAL_TYPE_EMOJI[type]}{" "}
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </Text>
+                    </View>
+                    <View className="items-end">
+                      <Text className="text-sm font-semibold text-gray-800">
+                        {value} kcal
+                      </Text>
+                      <Text className="text-xs text-gray-400">{pct}%</Text>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
-          ))}
-        </View>
+          </View>
+        )}
       </View>
 
       {/* Meal list */}
