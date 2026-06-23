@@ -149,6 +149,14 @@ export default function PatientDetailScreen() {
         {patient.age} yrs old
       </Text>
 
+      {/* Dashboard */}
+      <TouchableOpacity
+        onPress={() => router.push(`/(pages)?patientId=${patient.id}`)}
+        className="bg-gray-800 rounded-lg py-3 items-center mb-3"
+      >
+        <Text className="text-white font-semibold">🏠 Dashboard</Text>
+      </TouchableOpacity>
+
       {/* Log Meal */}
       <TouchableOpacity
         onPress={() => router.push(`/(pages)/meals?patientId=${patient.id}`)}
