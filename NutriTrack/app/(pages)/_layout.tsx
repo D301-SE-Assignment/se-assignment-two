@@ -60,6 +60,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="logout"
+        options={{
+          title: "Logout",
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons size={24} name="logout" color={color} />
+          ),
+        }}
+      />
 
       {/* Hidden screens */}
       <Tabs.Screen name="test" options={{ href: null }} />
