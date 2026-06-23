@@ -10,10 +10,14 @@ import {
   View,
 } from "react-native";
 import {
+  ACTIVITY_LEVEL_LABELS,
+  ActivityLevel,
+  calculateTDEE,
   Ethnicity,
   Gender,
   usePatientContext,
 } from "../context/PatientContext";
+import { useWeightContext } from "../context/WeightContext";
 
 const GENDERS: Gender[] = ["male", "female", "other"];
 const ETHNICITIES: Ethnicity[] = [
@@ -22,6 +26,13 @@ const ETHNICITIES: Ethnicity[] = [
   "Pacific Peoples",
   "Asian",
   "Other",
+];
+const ACTIVITY_LEVELS: ActivityLevel[] = [
+  "sedentary",
+  "light",
+  "moderate",
+  "active",
+  "very_active",
 ];
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
@@ -34,6 +45,7 @@ export default function PatientDetailScreen() {
     deletePatient,
     setLastViewedPatientId,
   } = usePatientContext();
+  const { getWeightEntriesByPatientId } = useWeightContext();
   const router = useRouter();
 
   const patient = getPatientById(id);
@@ -45,6 +57,9 @@ export default function PatientDetailScreen() {
   const [gender, setGender] = useState<Gender>(patient?.gender ?? "other");
   const [ethnicity, setEthnicity] = useState<Ethnicity>(
     patient?.ethnicity ?? "Other",
+  );
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel>(
+    patient?.activityLevel ?? "sedentary",
   );
   const [dietaryRequirements, setDietaryRequirements] = useState(
     patient?.dietaryRequirements ?? "",
@@ -67,6 +82,30 @@ export default function PatientDetailScreen() {
       </View>
     );
   }
+
+  // ── TDEE estimate, based on most recent weight entry ────────────────────────
+  const weightEntries = getWeightEntriesByPatientId(patient.id);
+  const latestWeight = weightEntries[0]; // already sorted most-recent-first
+
+  let weightInKg: number | undefined;
+  if (latestWeight) {
+    weightInKg =
+      latestWeight.unit === "lbs"
+        ? latestWeight.weight * 0.453592
+        : latestWeight.weight;
+  }
+
+  const estimatedTDEE = weightInKg
+    ? calculateTDEE(
+        {
+          age: patient.age,
+          height: patient.height,
+          gender: patient.gender,
+          activityLevel: patient.activityLevel,
+        },
+        weightInKg,
+      )
+    : undefined;
 
   function validate(): boolean {
     const next: Record<string, string> = {};
@@ -100,6 +139,7 @@ export default function PatientDetailScreen() {
       height: Number(height),
       gender,
       ethnicity,
+      activityLevel,
       dietaryRequirements: dietaryRequirements.trim() || undefined,
       medicalConditions: medicalConditions.trim() || undefined,
     });
@@ -157,6 +197,29 @@ export default function PatientDetailScreen() {
         Created {new Date(patient.createdAt).toLocaleDateString("en-NZ")} ·{" "}
         {patient.age} yrs old
       </Text>
+
+      {/* Estimated Energy Needs */}
+      <View className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-6">
+        <Text className="text-xs font-semibold text-amber-700 uppercase tracking-widest mb-1">
+          Estimated Daily Energy Needs
+        </Text>
+        {estimatedTDEE ? (
+          <>
+            <Text className="text-2xl font-bold text-amber-800">
+              {estimatedTDEE} kcal/day
+            </Text>
+            <Text className="text-xs text-amber-600 mt-1">
+              Based on latest weight ({latestWeight!.weight}
+              {latestWeight!.unit}) and{" "}
+              {ACTIVITY_LEVEL_LABELS[patient.activityLevel]}
+            </Text>
+          </>
+        ) : (
+          <Text className="text-sm text-amber-600">
+            Add a weight entry to see an estimated TDEE.
+          </Text>
+        )}
+      </View>
 
       {/* Dashboard */}
       <TouchableOpacity
@@ -263,6 +326,33 @@ export default function PatientDetailScreen() {
                 }
               >
                 {e}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Field>
+
+      {/* Activity Level */}
+      <Field label="Activity Level" error={errors.activityLevel}>
+        <View className="gap-2">
+          {ACTIVITY_LEVELS.map((level) => (
+            <TouchableOpacity
+              key={level}
+              onPress={() => setActivityLevel(level)}
+              className={`py-3 px-4 rounded-lg border ${
+                activityLevel === level
+                  ? "bg-blue-500 border-blue-500"
+                  : "border-gray-300"
+              }`}
+            >
+              <Text
+                className={
+                  activityLevel === level
+                    ? "text-white font-semibold"
+                    : "text-gray-600"
+                }
+              >
+                {ACTIVITY_LEVEL_LABELS[level]}
               </Text>
             </TouchableOpacity>
           ))}
