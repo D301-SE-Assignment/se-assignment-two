@@ -21,15 +21,14 @@ const MEAL_TYPE_EMOJI: Record<MealType, string> = {
 };
 
 const MEAL_TYPE_COLOR: Record<MealType, string> = {
-  breakfast: "#f59e0b", // amber
-  lunch: "#10b981", // emerald
-  dinner: "#6366f1", // indigo
-  snack: "#f43f5e", // rose
+  breakfast: "#f59e0b",
+  lunch: "#10b981",
+  dinner: "#6366f1",
+  snack: "#f43f5e",
 };
 
 function toDateKey(date: Date): string {
-  // Local date key, avoids UTC offset issues when comparing "same day"
-  return date.toLocaleDateString("en-CA"); // YYYY-MM-DD
+  return date.toLocaleDateString("en-CA");
 }
 
 function formatDateLabel(date: Date): string {
@@ -51,13 +50,18 @@ function formatDateLabel(date: Date): string {
 export default function DailyReportScreen() {
   const { patientId } = useLocalSearchParams<{ patientId: string }>();
   const router = useRouter();
-  const { getPatientById } = usePatientContext();
+  const { getPatientById, lastViewedPatientId } = usePatientContext();
   const { getMealsByPatientId, loading } = useMealContext();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const patient = patientId ? getPatientById(patientId) : undefined;
-  const allMeals = patientId ? getMealsByPatientId(patientId) : [];
+  const effectivePatientId = patientId || lastViewedPatientId || undefined;
+  const patient = effectivePatientId
+    ? getPatientById(effectivePatientId)
+    : undefined;
+  const allMeals = effectivePatientId
+    ? getMealsByPatientId(effectivePatientId)
+    : [];
 
   const dayMeals = useMemo(() => {
     const key = toDateKey(selectedDate);
@@ -123,7 +127,7 @@ export default function DailyReportScreen() {
     );
   }
 
-  if (!patientId || !patient) {
+  if (!effectivePatientId || !patient) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-8">
         <Text className="text-4xl mb-4">📊</Text>
