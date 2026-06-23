@@ -4,8 +4,11 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
+
+import { useAuthContext } from "./AuthContext";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,18 +23,19 @@ export type Ethnicity =
 
 export interface Patient {
   id: string;
+  userId: number; // which account owns this patient
   name: string;
-  birthdate: string; // ISO date, e.g. "1990-05-12"
-  age: number; // computed from birthdate at read time
-  height: number; // cm
+  birthdate: string;
+  age: number;
+  height: number;
   gender: Gender;
   ethnicity: Ethnicity;
   dietaryRequirements?: string;
   medicalConditions?: string;
-  createdAt: string; // ISO 8601
+  createdAt: string;
 }
 
-type PatientInput = Omit<Patient, "id" | "createdAt" | "age">;
+type PatientInput = Omit<Patient, "id" | "createdAt" | "age" | "userId">;
 
 interface PatientContextType {
   patients: Patient[];
@@ -90,62 +94,85 @@ async function saveToStorage(patients: StoredPatient[]): Promise<void> {
 const PatientContext = createContext<PatientContextType | null>(null);
 
 export function PatientProvider({ children }: { children: React.ReactNode }) {
-  const [patients, setPatients] = useState<StoredPatient[]>([]);
+  const { currentUser } = useAuthContext();
+
+  // Storage holds every account's patients in one flat list; we only ever
+  // expose the current user's slice of it through the context value below.
+  const [allPatients, setAllPatients] = useState<StoredPatient[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load persisted patients on mount
   useEffect(() => {
     loadFromStorage().then((stored) => {
-      setPatients(stored);
+      setAllPatients(stored);
       setLoading(false);
     });
   }, []);
 
   const persist = async (updated: StoredPatient[]) => {
-    setPatients(updated);
+    setAllPatients(updated);
     await saveToStorage(updated);
   };
 
+  const myPatients = useMemo(
+    () =>
+      currentUser ? allPatients.filter((p) => p.userId === currentUser.id) : [],
+    [allPatients, currentUser],
+  );
+
   const addPatient = useCallback(
     async (patient: PatientInput) => {
+      if (!currentUser) {
+        throw new Error("Cannot add a patient without a logged-in user.");
+      }
       const newPatient: StoredPatient = {
         ...patient,
         id: generateId(),
+        userId: currentUser.id,
         createdAt: new Date().toISOString(),
       };
-      await persist([...patients, newPatient]);
+      await persist([...allPatients, newPatient]);
     },
-    [patients],
+    [allPatients, currentUser],
   );
 
   const updatePatient = useCallback(
     async (id: string, updates: Partial<PatientInput>) => {
       await persist(
-        patients.map((p) => (p.id === id ? { ...p, ...updates } : p)),
+        allPatients.map((p) =>
+          p.id === id && p.userId === currentUser?.id
+            ? { ...p, ...updates }
+            : p,
+        ),
       );
     },
-    [patients],
+    [allPatients, currentUser],
   );
 
   const deletePatient = useCallback(
     async (id: string) => {
-      await persist(patients.filter((p) => p.id !== id));
+      await persist(
+        allPatients.filter(
+          (p) => !(p.id === id && p.userId === currentUser?.id),
+        ),
+      );
     },
-    [patients],
+    [allPatients, currentUser],
   );
 
   const getPatientById = useCallback(
     (id: string) => {
-      const found = patients.find((p) => p.id === id);
+      const found = allPatients.find(
+        (p) => p.id === id && p.userId === currentUser?.id,
+      );
       return found ? withAge(found) : undefined;
     },
-    [patients],
+    [allPatients, currentUser],
   );
 
   return (
     <PatientContext.Provider
       value={{
-        patients: patients.map(withAge),
+        patients: myPatients.map(withAge),
         loading,
         addPatient,
         updatePatient,
