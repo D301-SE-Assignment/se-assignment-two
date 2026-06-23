@@ -1,16 +1,18 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import {
-    Ethnicity,
-    Gender,
-    usePatientContext,
+  ACTIVITY_LEVEL_LABELS,
+  ActivityLevel,
+  Ethnicity,
+  Gender,
+  usePatientContext,
 } from "../context/PatientContext";
 
 const GENDERS: Gender[] = ["male", "female", "other"];
@@ -20,6 +22,13 @@ const ETHNICITIES: Ethnicity[] = [
   "Pacific Peoples",
   "Asian",
   "Other",
+];
+const ACTIVITY_LEVELS: ActivityLevel[] = [
+  "sedentary",
+  "light",
+  "moderate",
+  "active",
+  "very_active",
 ];
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
@@ -32,6 +41,8 @@ export default function AddPatientScreen() {
   const [height, setHeight] = useState("");
   const [gender, setGender] = useState<Gender>("other");
   const [ethnicity, setEthnicity] = useState<Ethnicity>("Other");
+  const [activityLevel, setActivityLevel] =
+    useState<ActivityLevel>("sedentary");
   const [dietaryRequirements, setDietaryRequirements] = useState("");
   const [medicalConditions, setMedicalConditions] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -71,6 +82,7 @@ export default function AddPatientScreen() {
         height: Number(height),
         gender,
         ethnicity,
+        activityLevel,
         dietaryRequirements: dietaryRequirements.trim() || undefined,
         medicalConditions: medicalConditions.trim() || undefined,
       });
@@ -169,6 +181,33 @@ export default function AddPatientScreen() {
                 }
               >
                 {e}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Field>
+
+      {/* Activity Level */}
+      <Field label="Activity Level" error={errors.activityLevel}>
+        <View className="gap-2">
+          {ACTIVITY_LEVELS.map((level) => (
+            <TouchableOpacity
+              key={level}
+              onPress={() => setActivityLevel(level)}
+              className={`py-3 px-4 rounded-lg border ${
+                activityLevel === level
+                  ? "bg-blue-500 border-blue-500"
+                  : "border-gray-300"
+              }`}
+            >
+              <Text
+                className={
+                  activityLevel === level
+                    ? "text-white font-semibold"
+                    : "text-gray-600"
+                }
+              >
+                {ACTIVITY_LEVEL_LABELS[level]}
               </Text>
             </TouchableOpacity>
           ))}
