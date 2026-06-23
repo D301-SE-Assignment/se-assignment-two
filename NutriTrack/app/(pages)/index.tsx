@@ -47,7 +47,11 @@ function isToday(isoDateTime: string): boolean {
 export default function HomeScreen() {
   const { patientId } = useLocalSearchParams<{ patientId: string }>();
   const router = useRouter();
-  const { getPatientById, loading: patientsLoading } = usePatientContext();
+  const {
+    getPatientById,
+    loading: patientsLoading,
+    lastViewedPatientId,
+  } = usePatientContext();
   const { getMealsByPatientId, loading: mealsLoading } = useMealContext();
   const {
     getGoalByPatientId,
@@ -62,16 +66,21 @@ export default function HomeScreen() {
   const greeting = GREETINGS[tod];
   const loading = patientsLoading || mealsLoading || goalsLoading;
 
-  const patient = patientId ? getPatientById(patientId) : undefined;
+  const effectivePatientId = patientId || lastViewedPatientId || undefined;
+  const patient = effectivePatientId
+    ? getPatientById(effectivePatientId)
+    : undefined;
 
   const consumed = useMemo(() => {
-    if (!patientId) return 0;
-    return getMealsByPatientId(patientId)
+    if (!effectivePatientId) return 0;
+    return getMealsByPatientId(effectivePatientId)
       .filter((m) => isToday(m.dateTime))
       .reduce((sum, m) => sum + m.calories, 0);
-  }, [patientId, getMealsByPatientId]);
+  }, [effectivePatientId, getMealsByPatientId]);
 
-  const energyGoal = patientId ? getGoalByPatientId(patientId) : 0;
+  const energyGoal = effectivePatientId
+    ? getGoalByPatientId(effectivePatientId)
+    : 0;
   const remaining = Math.max(energyGoal - consumed, 0);
   const pct =
     energyGoal > 0
@@ -85,8 +94,8 @@ export default function HomeScreen() {
 
   async function saveGoal() {
     const parsed = parseInt(goalInput, 10);
-    if (patientId && !isNaN(parsed) && parsed > 0) {
-      await setGoal(patientId, parsed);
+    if (effectivePatientId && !isNaN(parsed) && parsed > 0) {
+      await setGoal(effectivePatientId, parsed);
     }
     setGoalModalVisible(false);
   }
@@ -99,8 +108,7 @@ export default function HomeScreen() {
     );
   }
 
-  // Same "no patient selected" pattern used in meals.tsx / weight.tsx / report.tsx
-  if (!patientId || !patient) {
+  if (!effectivePatientId || !patient) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-8">
         <Text className="text-4xl mb-4">🏠</Text>
